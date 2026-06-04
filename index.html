@@ -3,45 +3,125 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>macskusz_exhibit_denver</title>
+  <title>1000 Names of Macskusz - Denver</title>
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
-    html,
-    body {
-      margin: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      background: #000;
-      color: #f4f1e8;
-      font-family: Helvetica, Arial, sans-serif;
-    }
-
-    main {
-      position: fixed;
-      inset: 0;
-      display: grid;
-      place-items: center;
-      background: #000;
-    }
-
-    h1 {
-      margin: 0;
-      font-size: clamp(28px, 5vw, 72px);
-      font-weight: 400;
-      line-height: 1;
-      letter-spacing: 0;
-      text-align: center;
-    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #000; color: #f4f1e8; font-family: Helvetica, Arial, sans-serif; }
+    main { position: fixed; inset: 0; display: grid; place-items: center; background: #000; }
+    img, video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; opacity: 0; transition: opacity 1200ms ease; }
+    .visible { opacity: 1; }
+    .caption { position: fixed; left: clamp(14px, 2.4vw, 32px); bottom: clamp(12px, 2.2vw, 28px); z-index: 5; font-size: clamp(12px, 1.2vw, 16px); letter-spacing: 0; opacity: 0; mix-blend-mode: screen; transition: opacity 1200ms ease; }
+    .caption.visible { opacity: 0.72; }
+    .counter { position: fixed; right: clamp(14px, 2.4vw, 32px); bottom: clamp(12px, 2.2vw, 28px); z-index: 5; font-size: clamp(11px, 1vw, 14px); opacity: 0; font-variant-numeric: tabular-nums; transition: opacity 1200ms ease; }
+    .counter.visible { opacity: 0.42; }
   </style>
 </head>
 <body>
-  <main>
-    <h1>Still waiting for Art! </h1>
+  <main aria-live="off">
+    <img id="still" alt="">
+    <video id="movie" playsinline preload="auto"></video>
   </main>
+  <div id="caption" class="caption"></div>
+  <div id="counter" class="counter"></div>
+  <script>
+    const items = [{"title": "Agenten Mikrobe", "image": "assets/20260602_221604_p00_Agenten_Mikrobe_A_symmetric_Scherenschnitt_monster_shaped_img00_base.png", "video": "assets/20260602_221604_p00_Agenten_Mikrobe_A_symmetric_Scherenschnitt_monster_shaped_img00_base_seedance.mp4"}, {"title": "Wasser Oracle", "image": "assets/20260603_115319_p00_Wasser_Oracle_A_vertically_symmetrical_Scherenschnitt_monster_img00_base.png", "video": "assets/20260603_115319_p00_Wasser_Oracle_A_vertically_symmetrical_Scherenschnitt_monster_img00_base_seedance.mp4"}, {"title": "Wasser-Mask", "image": "assets/20260603_122249_p00_Wasser_Mask_Shape__a_perfectly_bilateral_cut_paper_img00_base.png", "video": "assets/20260603_122249_p00_Wasser_Mask_Shape__a_perfectly_bilateral_cut_paper_img00_base_seedance.mp4"}];
+    const stillOnlyMs = 18000;
+    const imageHoldMs = 6000;
+    const fadeMs = 1200;
+    const pauseAfterVideoMs = 1600;
+    const soundEnabled = true;
+    let index = -1;
+    let timers = [];
+    let soundUnlocked = soundEnabled;
+    const still = document.getElementById('still');
+    const movie = document.getElementById('movie');
+    const caption = document.getElementById('caption');
+    const counter = document.getElementById('counter');
+
+    function schedule(fn, ms) {
+      const timer = window.setTimeout(fn, ms);
+      timers.push(timer);
+      return timer;
+    }
+
+    function clearTimers() {
+      timers.forEach((timer) => window.clearTimeout(timer));
+      timers = [];
+    }
+
+    function applySound() {
+      movie.muted = !soundUnlocked;
+      movie.volume = soundUnlocked ? 1 : 0;
+    }
+
+    function unlockSound() {
+      if (!soundEnabled) return;
+      soundUnlocked = true;
+      applySound();
+      if (movie.src) movie.play().catch(() => {});
+    }
+
+    function resetVideo() {
+      clearTimers();
+      movie.onended = null;
+      movie.pause();
+      movie.removeAttribute('src');
+      movie.load();
+      movie.classList.remove('visible');
+    }
+
+    function fadeOutThenNext() {
+      still.classList.remove('visible');
+      movie.classList.remove('visible');
+      caption.classList.remove('visible');
+      counter.classList.remove('visible');
+      schedule(showNext, pauseAfterVideoMs + fadeMs);
+    }
+
+    function playVideo(item) {
+      movie.src = item.video;
+      movie.currentTime = 0;
+      applySound();
+      movie.load();
+      movie.onended = fadeOutThenNext;
+      movie.classList.add('visible');
+      still.classList.remove('visible');
+      const attempt = movie.play();
+      if (attempt) {
+        attempt.catch(() => {
+          if (!soundEnabled) return;
+          soundUnlocked = false;
+          applySound();
+          movie.play().catch(() => fadeOutThenNext());
+        });
+      }
+    }
+
+    function showNext() {
+      resetVideo();
+      index = (index + 1) % items.length;
+      const item = items[index];
+      caption.textContent = item.title || '';
+      counter.textContent = String(index + 1) + ' / ' + String(items.length);
+      still.src = item.image;
+      still.classList.add('visible');
+      caption.classList.add('visible');
+      counter.classList.add('visible');
+
+      if (item.video) {
+        schedule(() => playVideo(item), imageHoldMs);
+      } else {
+        schedule(fadeOutThenNext, stillOnlyMs);
+      }
+    }
+
+    document.addEventListener('pointerdown', unlockSound);
+    document.addEventListener('keydown', (event) => {
+      unlockSound();
+      if (event.key === 'ArrowRight' || event.key === ' ') showNext();
+    });
+    showNext();
+  </script>
   <script>
     (() => {
       let last = null;
