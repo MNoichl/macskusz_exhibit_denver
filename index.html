@@ -42,5 +42,19 @@
   <main>
     <h1>Waiting for Art</h1>
   </main>
+  <script>
+    (() => {
+      let last = null;
+      setInterval(async () => {
+        try {
+          const t = await (await fetch('manifest.json?_=' + Date.now(), {cache: 'no-store'})).text();
+          if (last !== null && t !== last) location.reload();
+          last = t;
+        } catch (e) {
+          /* offline: ignore, keep showing current */
+        }
+      }, 15000);
+    })();
+  </script>
 </body>
 </html>
