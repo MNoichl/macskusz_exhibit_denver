@@ -2,6 +2,11 @@
   "title": "1000 Names of Macskusz - Denver",
   "items": [
     {
+      "title": "Wasser Oracle",
+      "image": "assets/20260603_115319_p00_Wasser_Oracle_A_vertically_symmetrical_Scherenschnitt_monster_img00_base.png",
+      "video": "assets/20260603_115319_p00_Wasser_Oracle_A_vertically_symmetrical_Scherenschnitt_monster_img00_base_seedance.mp4"
+    },
+    {
       "title": "Demon Dataland",
       "image": "assets/20260604_224343_p00_Demon_Dataland_Shape__a_perfectly_bilateral_Scherenschnitt_img00_base.png",
       "video": "assets/20260604_224343_p00_Demon_Dataland_Shape__a_perfectly_bilateral_Scherenschnitt_img00_base_seedance.mp4"
@@ -18,6 +23,14 @@
     "image_hold_ms": 6000,
     "fade_ms": 1200,
     "pause_after_video_ms": 1600,
-    "sound": true
+    "sound": true,
+    "qr_enabled": true,
+    "qr_url": "https://mnoichl.github.io/1000_names_of_macskusz/",
+    "qr_label": "Learn more about the Macskusz!",
+    "qr_asset": "assets/macskusz_qr_a5fbde25.png",
+    "qr_show_at_seconds": 35.0,
+    "qr_duration_seconds": 10.0,
+    "qr_show_at_ms": 35000,
+    "qr_duration_ms": 10000
   }
 }

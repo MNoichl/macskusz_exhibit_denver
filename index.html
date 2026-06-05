@@ -16,6 +16,10 @@
     .counter.visible { opacity: 0.42; }
     .empty-state { position: fixed; inset: 0; z-index: 10; display: none; place-items: center; background: #000; color: #fff; font-size: clamp(24px, 4vw, 56px); font-weight: 400; letter-spacing: 0; text-align: center; }
     .empty-state.visible { display: grid; }
+    .qr-card { position: fixed; right: clamp(14px, 2.2vw, 34px); bottom: clamp(14px, 2.2vw, 34px); z-index: 9; width: clamp(104px, 10vw, 158px); padding: clamp(7px, 0.8vw, 11px); border: 1px solid rgba(255, 255, 255, 0.76); border-radius: 4px; background: rgba(0, 0, 0, 0.9); color: #fff; opacity: 0; transform: translateY(calc(100% + 42px)); transition: transform 900ms cubic-bezier(0.22, 1, 0.36, 1), opacity 700ms ease; pointer-events: none; }
+    .qr-card.visible { opacity: 0.94; transform: translateY(0); }
+    .qr-label { margin: 0 0 clamp(5px, 0.6vw, 8px); font-size: clamp(9px, 0.78vw, 12px); line-height: 1.15; font-weight: 400; letter-spacing: 0; text-align: center; color: #fff; }
+    .qr-code { width: 100%; aspect-ratio: 1; background-image: url('assets/macskusz_qr_a5fbde25.png'); background-repeat: no-repeat; background-position: center; background-size: contain; }
   </style>
 </head>
 <body>
@@ -24,15 +28,22 @@
     <video id="movie" playsinline preload="auto"></video>
   </main>
   <div id="emptyState" class="empty-state" role="status" aria-live="polite">waiting for art...</div>
+  <div id="qrCard" class="qr-card" aria-label="Learn more about the Macskusz!">
+    <div class="qr-label">Learn more about the Macskusz!</div>
+    <div class="qr-code" aria-label="QR code for https://mnoichl.github.io/1000_names_of_macskusz/"></div>
+  </div>
   <div id="caption" class="caption"></div>
   <div id="counter" class="counter"></div>
   <script>
-    const items = [{"title": "Demon Dataland", "image": "assets/20260604_224343_p00_Demon_Dataland_Shape__a_perfectly_bilateral_Scherenschnitt_img00_base.png", "video": "assets/20260604_224343_p00_Demon_Dataland_Shape__a_perfectly_bilateral_Scherenschnitt_img00_base_seedance.mp4"}, {"title": "Timmy Kissa", "image": "assets/20260604_230730_p02_Timmy_Kissa_Shape__a_bilateral_forensic_whale_cat_img00_base.png", "video": "assets/20260604_230730_p02_Timmy_Kissa_Shape__a_bilateral_forensic_whale_cat_img00_base_seedance.mp4"}];
+    const items = [{"title": "Wasser Oracle", "image": "assets/20260603_115319_p00_Wasser_Oracle_A_vertically_symmetrical_Scherenschnitt_monster_img00_base.png", "video": "assets/20260603_115319_p00_Wasser_Oracle_A_vertically_symmetrical_Scherenschnitt_monster_img00_base_seedance.mp4"}, {"title": "Demon Dataland", "image": "assets/20260604_224343_p00_Demon_Dataland_Shape__a_perfectly_bilateral_Scherenschnitt_img00_base.png", "video": "assets/20260604_224343_p00_Demon_Dataland_Shape__a_perfectly_bilateral_Scherenschnitt_img00_base_seedance.mp4"}, {"title": "Timmy Kissa", "image": "assets/20260604_230730_p02_Timmy_Kissa_Shape__a_bilateral_forensic_whale_cat_img00_base.png", "video": "assets/20260604_230730_p02_Timmy_Kissa_Shape__a_bilateral_forensic_whale_cat_img00_base_seedance.mp4"}];
     const stillOnlyMs = 18000;
     const imageHoldMs = 6000;
     const fadeMs = 1200;
     const pauseAfterVideoMs = 1600;
     const soundEnabled = true;
+    const qrEnabled = true;
+    const qrShowAtMs = 35000;
+    const qrDurationMs = 10000;
     let index = -1;
     let timers = [];
     let soundUnlocked = soundEnabled;
@@ -41,6 +52,7 @@
     const caption = document.getElementById('caption');
     const counter = document.getElementById('counter');
     const emptyState = document.getElementById('emptyState');
+    const qrCard = document.getElementById('qrCard');
 
     function schedule(fn, ms) {
       const timer = window.setTimeout(fn, ms);
@@ -67,6 +79,7 @@
 
     function resetVideo() {
       clearTimers();
+      hideQrCode();
       movie.onended = null;
       movie.pause();
       movie.removeAttribute('src');
@@ -74,11 +87,23 @@
       movie.classList.remove('visible');
     }
 
+    function showQrCode() {
+      if (!qrEnabled || !qrCard) return;
+      qrCard.classList.add('visible');
+      schedule(hideQrCode, qrDurationMs);
+    }
+
+    function hideQrCode() {
+      if (!qrCard) return;
+      qrCard.classList.remove('visible');
+    }
+
     function fadeOutThenNext() {
       still.classList.remove('visible');
       movie.classList.remove('visible');
       caption.classList.remove('visible');
       counter.classList.remove('visible');
+      hideQrCode();
       schedule(showNext, pauseAfterVideoMs + fadeMs);
     }
 
@@ -107,6 +132,7 @@
       still.classList.remove('visible');
       caption.classList.remove('visible');
       counter.classList.remove('visible');
+      hideQrCode();
       emptyState.classList.add('visible');
     }
 
@@ -125,6 +151,9 @@
       still.classList.add('visible');
       caption.classList.add('visible');
       counter.classList.add('visible');
+      if (qrEnabled && qrShowAtMs >= 0) {
+        schedule(showQrCode, qrShowAtMs);
+      }
 
       if (item.video) {
         schedule(() => playVideo(item), imageHoldMs);
