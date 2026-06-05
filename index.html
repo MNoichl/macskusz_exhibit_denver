@@ -14,6 +14,8 @@
     .caption.visible { opacity: 0.72; }
     .counter { position: fixed; right: clamp(14px, 2.4vw, 32px); bottom: clamp(12px, 2.2vw, 28px); z-index: 5; font-size: clamp(11px, 1vw, 14px); opacity: 0; font-variant-numeric: tabular-nums; transition: opacity 1200ms ease; }
     .counter.visible { opacity: 0.42; }
+    .empty-state { position: fixed; inset: 0; z-index: 10; display: none; place-items: center; background: #000; color: #fff; font-size: clamp(24px, 4vw, 56px); font-weight: 400; letter-spacing: 0; text-align: center; }
+    .empty-state.visible { display: grid; }
   </style>
 </head>
 <body>
@@ -21,10 +23,11 @@
     <img id="still" alt="">
     <video id="movie" playsinline preload="auto"></video>
   </main>
+  <div id="emptyState" class="empty-state" role="status" aria-live="polite">waiting for art...</div>
   <div id="caption" class="caption"></div>
   <div id="counter" class="counter"></div>
   <script>
-    const items = [{"title": "Wasser-Mask", "image": "assets/20260603_122249_p00_Wasser_Mask_Shape__a_perfectly_bilateral_cut_paper_img00_base.png", "video": "assets/20260603_122249_p00_Wasser_Mask_Shape__a_perfectly_bilateral_cut_paper_img00_base_seedance.mp4"}];
+    const items = [];
     const stillOnlyMs = 18000;
     const imageHoldMs = 6000;
     const fadeMs = 1200;
@@ -37,6 +40,7 @@
     const movie = document.getElementById('movie');
     const caption = document.getElementById('caption');
     const counter = document.getElementById('counter');
+    const emptyState = document.getElementById('emptyState');
 
     function schedule(fn, ms) {
       const timer = window.setTimeout(fn, ms);
@@ -97,7 +101,21 @@
       }
     }
 
+    function showEmptyState() {
+      resetVideo();
+      still.removeAttribute('src');
+      still.classList.remove('visible');
+      caption.classList.remove('visible');
+      counter.classList.remove('visible');
+      emptyState.classList.add('visible');
+    }
+
     function showNext() {
+      if (!items.length) {
+        showEmptyState();
+        return;
+      }
+      emptyState.classList.remove('visible');
       resetVideo();
       index = (index + 1) % items.length;
       const item = items[index];

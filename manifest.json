@@ -1,12 +1,6 @@
 {
   "title": "1000 Names of Macskusz - Denver",
-  "items": [
-    {
-      "title": "Wasser-Mask",
-      "image": "assets/20260603_122249_p00_Wasser_Mask_Shape__a_perfectly_bilateral_cut_paper_img00_base.png",
-      "video": "assets/20260603_122249_p00_Wasser_Mask_Shape__a_perfectly_bilateral_cut_paper_img00_base_seedance.mp4"
-    }
-  ],
+  "items": [],
   "timing": {
     "seconds_per_item": 18.0,
     "image_seconds": 6.0,
